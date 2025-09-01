@@ -165,11 +165,6 @@ export function FavoritesList() {
                   cryptoId={favorite.crypto_id}
                   cryptoName={favorite.top_cryptocurrencies.name}
                   showTooltip={false}
-                  onFavoriteChange={(isFavorite) => {
-                    if (!isFavorite) {
-                      handleFavoriteRemoved(favorite.crypto_id);
-                    }
-                  }}
                 />
               </div>
 
