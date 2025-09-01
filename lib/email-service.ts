@@ -1,6 +1,18 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is required');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 export interface PriceAlertEmailData {
   userName: string;
@@ -129,7 +141,7 @@ export class EmailService {
     try {
       const html = this.generateAlertEmailHtml(data);
       
-      const result = await resend.emails.send({
+      const result = await getResendClient().emails.send({
         from: 'CryptoNiche <noreply@resend.dev>', // 需要验证域名后更改
         to: [data.userEmail],
         subject: `🚨 ${data.cryptoSymbol} Price Alert: ${this.formatPercentage(data.changePercentage)} change`,
@@ -151,7 +163,7 @@ export class EmailService {
 
   async sendTestEmail(email: string): Promise<boolean> {
     try {
-      const result = await resend.emails.send({
+      const result = await getResendClient().emails.send({
         from: 'CryptoNiche <noreply@resend.dev>',
         to: [email],
         subject: 'CryptoNiche Email Service Test',
