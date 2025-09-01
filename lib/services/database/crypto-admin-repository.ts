@@ -10,7 +10,14 @@ import { logger } from '@/lib/utils/logger';
 import { CONFIG } from '@/lib/config/constants';
 
 export class CryptoAdminRepository {
-  private adminSupabase = createAdminClient();
+  private adminSupabase: ReturnType<typeof createAdminClient> | null = null;
+
+  private getAdminSupabase() {
+    if (!this.adminSupabase) {
+      this.adminSupabase = createAdminClient();
+    }
+    return this.adminSupabase;
+  }
 
   /**
    * 批量插入或更新加密货币数据
@@ -23,7 +30,7 @@ export class CryptoAdminRepository {
       for (let i = 0; i < cryptocurrencies.length; i += batchSize) {
         const batch = cryptocurrencies.slice(i, i + batchSize);
         
-        const { data, error } = await this.adminSupabase
+        const { data, error } = await this.getAdminSupabase()
           .from('cryptocurrencies')
           .upsert(batch.map(crypto => ({
             ...crypto,
@@ -54,7 +61,7 @@ export class CryptoAdminRepository {
    */
   async insertMarketData(marketData: Omit<MarketData, 'id' | 'timestamp'>): Promise<void> {
     return ErrorHandler.withErrorHandling('insertMarketData', async () => {
-      const { error } = await this.adminSupabase
+      const { error } = await this.getAdminSupabase()
         .from('market_data')
         .insert({
           ...marketData,
@@ -82,7 +89,7 @@ export class CryptoAdminRepository {
       for (let i = 0; i < priceData.length; i += batchSize) {
         const batch = priceData.slice(i, i + batchSize);
         
-        const { error } = await this.adminSupabase
+        const { error } = await this.getAdminSupabase()
           .from('crypto_prices')
           .insert(batch);
 
@@ -114,9 +121,9 @@ export class CryptoAdminRepository {
     return ErrorHandler.withErrorHandling('getDatabaseStats', async () => {
       // 获取总数和活跃数
       const [totalResult, activeResult, latestResult] = await Promise.all([
-        this.adminSupabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }),
-        this.adminSupabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }).eq('is_active', true),
-        this.adminSupabase.from('cryptocurrencies').select('updated_at').order('updated_at', { ascending: false }).limit(1).single()
+        this.getAdminSupabase().from('cryptocurrencies').select('id', { count: 'exact', head: true }),
+        this.getAdminSupabase().from('cryptocurrencies').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        this.getAdminSupabase().from('cryptocurrencies').select('updated_at').order('updated_at', { ascending: false }).limit(1).single()
       ]);
 
       if (totalResult.error) {

@@ -22,12 +22,15 @@ interface PriceChange {
 }
 
 export class PriceMonitor {
-  private supabase = createAdminClient();
+  private supabase: ReturnType<typeof createAdminClient> | null = null;
   private isRunning = false;
   private checkInterval = 30 * 1000; // 30秒检查一次
   
-  constructor() {
-    this.supabase = createAdminClient();
+  private getSupabase() {
+    if (!this.supabase) {
+      this.supabase = createAdminClient();
+    }
+    return this.supabase;
   }
 
   /**
@@ -143,14 +146,14 @@ export class PriceMonitor {
   async getAlertStats() {
     try {
       // 活跃预警数量
-      const { count: activeAlerts } = await this.supabase
+      const { count: activeAlerts } = await this.getSupabase()
         .from('user_alerts')
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true);
 
       // 今日触发的预警数量
       const today = new Date().toISOString().split('T')[0];
-      const { count: todayTriggered } = await this.supabase
+      const { count: todayTriggered } = await this.getSupabase()
         .from('alert_notifications')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', `${today}T00:00:00Z`)
