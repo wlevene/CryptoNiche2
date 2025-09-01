@@ -4,7 +4,7 @@ import { AlertService } from '@/lib/alert-service';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -27,7 +27,8 @@ export async function PUT(
     }
 
     const alertService = new AlertService();
-    const alert = await alertService.toggleAlert(params.id, is_active);
+    const resolvedParams = await params;
+    const alert = await alertService.toggleAlert(resolvedParams.id, is_active);
 
     return NextResponse.json({
       success: true,

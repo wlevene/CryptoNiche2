@@ -3,10 +3,11 @@ import { CryptoRepository } from '@/lib/services/database/crypto-repository';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cryptoId = parseInt(params.id);
+    const resolvedParams = await params;
+    const cryptoId = parseInt(resolvedParams.id);
     
     if (isNaN(cryptoId)) {
       return NextResponse.json(
