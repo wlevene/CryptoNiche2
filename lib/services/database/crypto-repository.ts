@@ -209,8 +209,8 @@ export class CryptoRepository {
       // 使用只读客户端获取统计数据
       const [totalResult, activeResult, latestResult] = await Promise.all([
         this.supabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }),
-        supabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('cryptocurrencies').select('updated_at').order('updated_at', { ascending: false }).limit(1).single()
+        this.supabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        this.supabase.from('cryptocurrencies').select('updated_at').order('updated_at', { ascending: false }).limit(1).single()
       ]);
 
       return {
