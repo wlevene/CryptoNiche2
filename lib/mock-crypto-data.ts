@@ -61,6 +61,8 @@ export const generateMockCryptoData = (count: number = 10): CryptocurrencyData[]
       name: 'USD',
       price: crypto.price,
       volume24h: crypto.marketCap * (Math.random() * 0.1 + 0.01),
+      volume7d: crypto.marketCap * (Math.random() * 0.7 + 0.07),
+      volume30d: crypto.marketCap * (Math.random() * 3 + 0.3),
       marketCap: crypto.marketCap,
       percentChange1h: (Math.random() - 0.5) * 5,
       percentChange24h: (Math.random() - 0.5) * 20,
@@ -68,10 +70,10 @@ export const generateMockCryptoData = (count: number = 10): CryptocurrencyData[]
       percentChange30d: (Math.random() - 0.5) * 50,
       percentChange60d: (Math.random() - 0.5) * 70,
       percentChange90d: (Math.random() - 0.5) * 100,
-      marketCapDominance: crypto.marketCap / 2000000000000 * 100,
-      fullyDilutedMarketCap: crypto.marketCap * 1.3,
-      tvl: null,
-      lastUpdated: new Date().toISOString()
+      dominance: crypto.marketCap / 2000000000000 * 100,
+      turnover: Math.random() * 0.3,
+      ytdPriceChangePercentage: (Math.random() - 0.5) * 200,
+      percentChange1y: (Math.random() - 0.5) * 400
     }]
   }));
 };
