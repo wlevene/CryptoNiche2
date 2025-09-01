@@ -4,7 +4,7 @@ import { AlertService } from '@/lib/alert-service';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -19,8 +19,9 @@ export async function PUT(
 
     const body = await request.json();
     const alertService = new AlertService();
+    const resolvedParams = await params;
     
-    const alert = await alertService.updateAlert(params.id, body);
+    const alert = await alertService.updateAlert(resolvedParams.id, body);
 
     return NextResponse.json({
       success: true,
@@ -43,7 +44,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -57,7 +58,8 @@ export async function DELETE(
     }
 
     const alertService = new AlertService();
-    await alertService.deleteAlert(params.id);
+    const resolvedParams = await params;
+    await alertService.deleteAlert(resolvedParams.id);
 
     return NextResponse.json({
       success: true,
