@@ -6,6 +6,7 @@
 
 import { createAdminClient } from '@/lib/supabase-admin';
 import type { Database } from '@/lib/supabase';
+import type { MarketStats } from './types/crypto';
 
 // 类型定义
 type CryptocurrencyInsert = Database['public']['Tables']['cryptocurrencies']['Insert'];
@@ -663,6 +664,83 @@ export class CryptoDataService {
     } catch (error) {
       console.error('清理过期数据时发生异常:', error);
     }
+  }
+
+  /**
+   * 获取市场统计数据
+   */
+  async getMarketStats(): Promise<MarketStats> {
+    try {
+      // 获取最新的市场数据
+      const { data: marketData, error: marketError } = await this.supabase
+        .from('market_data')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (marketError || !marketData) {
+        // 如果没有市场数据，尝试从加密货币表计算
+        const { data: cryptos, error: cryptoError } = await this.supabase
+          .from('cryptocurrencies')
+          .select('id')
+          .eq('is_active', true);
+
+        if (cryptoError) {
+          throw new Error(`获取加密货币数据失败: ${cryptoError.message}`);
+        }
+
+        return {
+          totalMarketCap: 0,
+          total24hVolume: 0,
+          btcDominance: 0,
+          activeCryptocurrencies: cryptos?.length || 0
+        };
+      }
+
+      return {
+        totalMarketCap: marketData.total_market_cap || 0,
+        total24hVolume: marketData.total_volume_24h || 0,
+        btcDominance: marketData.btc_dominance || 0,
+        activeCryptocurrencies: marketData.active_cryptocurrencies || 0
+      };
+    } catch (error) {
+      console.error('获取市场统计数据失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取最新价格数据
+   */
+  async getLatestPrices(limit: number = 10) {
+    try {
+      const { data, error } = await this.supabase
+        .from('crypto_prices')
+        .select(`
+          *,
+          cryptocurrencies!inner(*)
+        `)
+        .eq('quote_currency', 'USD')
+        .order('timestamp', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw new Error(`获取最新价格失败: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('获取最新价格数据失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 同步加密货币数据 (兼容性方法)
+   */
+  async syncCryptocurrencyData(maxCount: number = 1000) {
+    return await this.getAllCryptocurrenciesAndSave(100, maxCount);
   }
 
 }

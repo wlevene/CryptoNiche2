@@ -55,19 +55,6 @@ export async function GET(
       percent_change_30d: priceData?.percent_change_30d || 0
     };
     
-    const error = null;
-
-    if (error) {
-      console.error('Supabase query error:', error);
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { success: false, error: 'Cryptocurrency not found' },
-          { status: 404 }
-        );
-      }
-      throw error;
-    }
-    
     if (!data) {
       console.error('No data returned for crypto ID:', cryptoId);
       return NextResponse.json(

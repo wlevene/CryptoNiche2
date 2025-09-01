@@ -9,7 +9,7 @@ interface LogContext {
   operation?: string;
   userId?: string;
   cryptoId?: number;
-  duration?: number;
+  duration?: number | string;
   [key: string]: any;
 }
 

@@ -14,9 +14,9 @@ export async function GET() {
       preview: mockData.slice(0, 3).map(crypto => ({
         name: crypto.name,
         symbol: crypto.symbol,
-        price: crypto.quote.USD.price,
-        market_cap: crypto.quote.USD.market_cap,
-        rank: crypto.cmc_rank
+        price: crypto.quotes?.find(q => q.name === 'USD')?.price || 0,
+        market_cap: crypto.quotes?.find(q => q.name === 'USD')?.marketCap || 0,
+        rank: crypto.cmcRank || 999
       })),
       note: "This is test data. To store in database, please configure Supabase RLS policies."
     });

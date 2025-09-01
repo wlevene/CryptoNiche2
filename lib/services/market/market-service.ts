@@ -59,7 +59,7 @@ export class MarketService {
         symbol: crypto.symbol || 'UNK',
         name: crypto.name || 'Unknown',
         price: NumberFormatter.safeNumber(crypto.price),
-        change: NumberFormatter.safeNumber(crypto.percent_change_24h || crypto.change_24h),
+        change: NumberFormatter.safeNumber(crypto.change_24h),
         volume: NumberFormatter.formatLargeNumber(crypto.volume_24h || 0),
         marketCap: NumberFormatter.formatLargeNumber(crypto.market_cap || 0),
         rank: crypto.cmc_rank || 999,
@@ -87,7 +87,7 @@ export class MarketService {
         symbol: crypto.symbol || 'UNK',
         name: crypto.name || 'Unknown',
         price: NumberFormatter.safeNumber(crypto.price),
-        change: NumberFormatter.safeNumber(crypto.percent_change_24h || crypto.change_24h),
+        change: NumberFormatter.safeNumber(crypto.change_24h),
         volume: 'N/A', // 搜索结果不包含交易量数据
         marketCap: 'N/A', // 搜索结果不包含市值数据
         rank: crypto.cmc_rank || 999,
@@ -132,7 +132,7 @@ export class MarketService {
         symbol: crypto.symbol || 'UNK',
         name: crypto.name || 'Unknown',
         price: NumberFormatter.safeNumber(crypto.price),
-        change: NumberFormatter.safeNumber(crypto.percent_change_24h || crypto.change_24h),
+        change: NumberFormatter.safeNumber(crypto.change_24h),
         volume: NumberFormatter.formatLargeNumber(crypto.volume_24h || 0),
         marketCap: NumberFormatter.formatLargeNumber(crypto.market_cap || 0),
         rank: crypto.cmc_rank || 999,

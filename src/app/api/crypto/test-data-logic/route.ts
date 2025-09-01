@@ -177,7 +177,8 @@ export async function POST(request: NextRequest) {
       if (usdQuote) {
         const transformedPrice = {
           crypto_id: crypto.id,
-          price_usd: usdQuote.price,
+          quote_currency: 'USD',
+          price: usdQuote.price,
           price_btc: btcQuote?.price || null,
           price_eth: ethQuote?.price || null,
           volume_24h: usdQuote.volume24h || null,
