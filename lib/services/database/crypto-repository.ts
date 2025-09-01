@@ -9,14 +9,21 @@ import { logger } from '@/lib/utils/logger';
 import { CONFIG } from '@/lib/config/constants';
 
 export class CryptoRepository {
-  private supabase = createUniversalClient();
+  private supabase: ReturnType<typeof createUniversalClient> | null = null;
+
+  private getSupabase() {
+    if (!this.supabase) {
+      this.supabase = createUniversalClient();
+    }
+    return this.supabase;
+  }
 
   /**
    * 获取加密货币列表
    */
   async getCryptocurrencies(limit: number = CONFIG.DATABASE.QUERY_LIMIT.DEFAULT): Promise<CryptoCurrency[]> {
     return ErrorHandler.withErrorHandling('getCryptocurrencies', async () => {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('top_cryptocurrencies')
         .select(`
           id,
@@ -67,7 +74,7 @@ export class CryptoRepository {
    */
   async getCryptocurrencyById(id: number): Promise<CryptoCurrency | null> {
     return ErrorHandler.withErrorHandling('getCryptocurrencyById', async () => {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('top_cryptocurrencies')
         .select('*')
         .eq('id', id)
@@ -94,7 +101,7 @@ export class CryptoRepository {
    */
   async searchCryptocurrencies(query: string, limit: number = CONFIG.DATABASE.QUERY_LIMIT.SEARCH_RESULTS): Promise<CryptoCurrency[]> {
     return ErrorHandler.withErrorHandling('searchCryptocurrencies', async () => {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('top_cryptocurrencies')
         .select(`
           id,
@@ -147,7 +154,7 @@ export class CryptoRepository {
    */
   async getLatestMarketData(): Promise<MarketData | null> {
     return ErrorHandler.withErrorHandling('getLatestMarketData', async () => {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('market_data')
         .select('*')
         .order('timestamp', { ascending: false })
@@ -177,7 +184,7 @@ export class CryptoRepository {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('price_history')
         .select('crypto_id, price, timestamp')
         .eq('crypto_id', cryptoId)
@@ -208,9 +215,9 @@ export class CryptoRepository {
     return ErrorHandler.withErrorHandling('getDatabaseStats', async () => {
       // 使用只读客户端获取统计数据
       const [totalResult, activeResult, latestResult] = await Promise.all([
-        this.supabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }),
-        this.supabase.from('cryptocurrencies').select('id', { count: 'exact', head: true }).eq('is_active', true),
-        this.supabase.from('cryptocurrencies').select('updated_at').order('updated_at', { ascending: false }).limit(1).single()
+        this.getSupabase().from('cryptocurrencies').select('id', { count: 'exact', head: true }),
+        this.getSupabase().from('cryptocurrencies').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        this.getSupabase().from('cryptocurrencies').select('updated_at').order('updated_at', { ascending: false }).limit(1).single()
       ]);
 
       return {

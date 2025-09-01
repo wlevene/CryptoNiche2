@@ -77,9 +77,16 @@ export class CryptoDataService {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
   };
 
-  private supabase = createAdminClient();
+  private supabase: ReturnType<typeof createAdminClient> | null = null;
   private syncInterval: NodeJS.Timeout | null = null;
   private aggregationInterval: NodeJS.Timeout | null = null;
+
+  private getSupabase() {
+    if (!this.supabase) {
+      this.supabase = createAdminClient();
+    }
+    return this.supabase;
+  }
 
   /**
    * 获取加密货币列表 (参考 crypto_crawler.py:get_cryptocurrency_listing)
@@ -349,7 +356,7 @@ export class CryptoDataService {
    * 批量保存加密货币基础信息
    */
   async upsertCryptocurrencies(cryptocurrencies: CryptocurrencyInsert[]) {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('cryptocurrencies')
       .upsert(cryptocurrencies, { 
         onConflict: 'id',
@@ -369,7 +376,7 @@ export class CryptoDataService {
    * 批量保存价格数据
    */
   async insertPriceData(priceData: CryptoPriceInsert[]) {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('crypto_prices')
       .insert(priceData)
       .select();
@@ -456,7 +463,7 @@ export class CryptoDataService {
       timestamp: new Date().toISOString(),
     };
 
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('market_data')
       .insert(marketData);
 
@@ -495,7 +502,7 @@ export class CryptoDataService {
       console.log('📊 开始聚合价格历史数据...');
       
       // 获取所有活跃的加密货币
-      const { data: cryptos, error: cryptoError } = await this.supabase
+      const { data: cryptos, error: cryptoError } = await this.getSupabase()
         .from('cryptocurrencies')
         .select('id')
         .eq('is_active', true);
@@ -536,7 +543,7 @@ export class CryptoDataService {
       const startTime = new Date(endTime.getTime() - hours * 60 * 60 * 1000);
       
       // 检查是否已经存在该时间段的聚合数据
-      const { data: existingData } = await this.supabase
+      const { data: existingData } = await this.getSupabase()
         .from('price_history')
         .select('crypto_id')
         .eq('interval_type', intervalType)
@@ -550,7 +557,7 @@ export class CryptoDataService {
       }
 
       // 聚合 crypto_prices 数据
-      const { data: priceData, error } = await this.supabase
+      const { data: priceData, error } = await this.getSupabase()
         .from('crypto_prices')
         .select(`
           crypto_id,
@@ -579,7 +586,7 @@ export class CryptoDataService {
       
       if (aggregatedData.length > 0) {
         // 批量插入聚合数据
-        const { error: insertError } = await this.supabase
+        const { error: insertError } = await this.getSupabase()
           .from('price_history')
           .insert(aggregatedData);
 
@@ -651,7 +658,7 @@ export class CryptoDataService {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
       
-      const { error } = await this.supabase
+      const { error } = await this.getSupabase()
         .from('crypto_prices')
         .delete()
         .lt('timestamp', cutoffDate.toISOString());
@@ -672,7 +679,7 @@ export class CryptoDataService {
   async getMarketStats(): Promise<MarketStats> {
     try {
       // 获取最新的市场数据
-      const { data: marketData, error: marketError } = await this.supabase
+      const { data: marketData, error: marketError } = await this.getSupabase()
         .from('market_data')
         .select('*')
         .order('timestamp', { ascending: false })
@@ -681,7 +688,7 @@ export class CryptoDataService {
 
       if (marketError || !marketData) {
         // 如果没有市场数据，尝试从加密货币表计算
-        const { data: cryptos, error: cryptoError } = await this.supabase
+        const { data: cryptos, error: cryptoError } = await this.getSupabase()
           .from('cryptocurrencies')
           .select('id')
           .eq('is_active', true);
@@ -715,7 +722,7 @@ export class CryptoDataService {
    */
   async getLatestPrices(limit: number = 10) {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await this.getSupabase()
         .from('crypto_prices')
         .select(`
           *,
