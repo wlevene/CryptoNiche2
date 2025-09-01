@@ -373,7 +373,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={loading || (validation && (!validation.name.isValid || !validation.email.isValid || !validation.password.isValid || !validation.confirmPassword.isValid))}
+                disabled={loading || (validation ? (!validation.name.isValid || !validation.email.isValid || !validation.password.isValid || !validation.confirmPassword.isValid) : false)}
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </Button>
