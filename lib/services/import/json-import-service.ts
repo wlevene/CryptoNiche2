@@ -5,7 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { CryptoAdminRepository } from '../database/crypto-admin-repository';
-import { DataTransformer } from './data-transformer';
+import { DataTransformer, type RawJsonCrypto } from './data-transformer';
 import type { ImportProgress } from '@/lib/types/crypto';
 import { ErrorHandler, ValidationError } from '@/lib/utils/error-handler';
 import { DateFormatter } from '@/lib/utils/formatters';

@@ -6,7 +6,7 @@
 import type { CryptoCurrency, CryptoPrice } from '@/lib/types/crypto';
 import { NumberFormatter, StringFormatter, DateFormatter } from '@/lib/utils/formatters';
 
-interface RawJsonCrypto {
+export interface RawJsonCrypto {
   id: number;
   symbol: string;
   name: string;
