@@ -25,11 +25,10 @@ export class CryptoRepository {
           price,
           market_cap,
           volume_24h,
-          percent_change_24h as change_24h,
+          percent_change_24h,
           cmc_rank,
-          cmc_rank as rank,
           slug,
-          market_pair_count as num_market_pairs,
+          market_pair_count,
           circulating_supply,
           total_supply,
           max_supply,
@@ -52,7 +51,14 @@ export class CryptoRepository {
       }
 
       logger.database('getCryptocurrencies', 'cryptocurrencies', data?.length);
-      return data || [];
+      
+      // Map database fields to CryptoCurrency interface
+      return (data || []).map(item => ({
+        ...item,
+        rank: item.cmc_rank,
+        change_24h: item.percent_change_24h,
+        num_market_pairs: item.market_pair_count
+      }));
     });
   }
 
