@@ -84,6 +84,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     setLoading(true);
 
     try {
+      console.log('Attempting to sign up with email:', signUpData.email);
+      
       const { error } = await supabase.auth.signUp({
         email: signUpData.email,
         password: signUpData.password,
@@ -96,6 +98,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       });
 
       if (error) {
+        console.error('Sign up error:', error);
         toast.error(error.message);
       } else {
         toast.success("Registration successful! You can now sign in.");
@@ -104,6 +107,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onOpenChange(false);
       }
     } catch (error) {
+      console.error('Sign up exception:', error);
       toast.error("Registration failed, please try again");
     } finally {
       setLoading(false);
@@ -119,18 +123,24 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     setLoading(true);
 
     try {
+      console.log('Attempting to sign in with email:', signInData.email);
+      
       const { error } = await supabase.auth.signInWithPassword({
         email: signInData.email,
         password: signInData.password,
       });
 
       if (error) {
+        console.error('Sign in error:', error);
         toast.error(error.message);
       } else {
         toast.success("Sign in successful!");
         onOpenChange(false);
+        // Reload the page to update the auth state
+        window.location.reload();
       }
     } catch (error) {
+      console.error('Sign in exception:', error);
       toast.error("Sign in failed, please try again");
     } finally {
       setLoading(false);
