@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSupabaseClient } from "@/lib/supabase-browser";
-import { Mail, Lock, User, Github, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordStrength } from "./password-strength";
 import { validateForm, FormValidation } from "@/lib/password-validation";
@@ -165,31 +165,6 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     }
   };
 
-  const handleGithubSignIn = async () => {
-    if (!supabase) {
-      toast.error('Authentication service is not available. Please try again later.');
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        toast.error(error.message);
-      }
-    } catch (error) {
-      toast.error("GitHub sign in failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -248,28 +223,6 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or
-                </span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleGithubSignIn}
-              disabled={loading}
-            >
-              <Github className="mr-2 h-4 w-4" />
-              Sign in with GitHub
-            </Button>
           </TabsContent>
 
           <TabsContent value="signup" className="space-y-4">
