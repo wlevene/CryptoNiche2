@@ -29,7 +29,11 @@ export interface FavoriteItem {
 }
 
 export class FavoritesService {
-  private supabase = createClient();
+  private supabase: any;
+  
+  constructor() {
+    this.supabase = createClient();
+  }
 
   /**
    * 获取用户收藏列表

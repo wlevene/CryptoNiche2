@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase-client";
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
     // Get initial session
@@ -21,7 +21,7 @@ export function useAuth() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: any, session: any) => {
         setUser(session?.user ?? null);
         setLoading(false);
       }

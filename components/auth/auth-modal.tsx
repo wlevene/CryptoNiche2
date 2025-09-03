@@ -28,7 +28,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   const [signUpData, setSignUpData] = useState({
     name: "",
