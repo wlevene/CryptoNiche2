@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get latest prices for favorite cryptos
-    const cryptoIds = data?.map(fav => fav.crypto_id) || [];
+    const cryptoIds = data?.map((fav: any) => fav.crypto_id) || [];
     
     if (cryptoIds.length === 0) {
       return NextResponse.json({
@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Combine favorites with price data
-    const favoritesWithPrices = data?.map(fav => {
-      const priceData = pricesData?.find(p => p.id === fav.crypto_id);
+    const favoritesWithPrices = data?.map((fav: any) => {
+      const priceData = pricesData?.find((p: any) => p.id === fav.crypto_id);
       // Merge crypto info with price data
       const mergedData = priceData ? {
         ...fav.cryptocurrencies,

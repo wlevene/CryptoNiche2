@@ -90,9 +90,16 @@ class AppInitializer {
     try {
       console.log('📥 开始初始数据同步...');
       
-      // 先检查数据库中是否已有数据
-      const { createClient } = await import('./supabase-server');
-      const supabase = await createClient();
+      // 在客户端环境中使用浏览器客户端
+      let supabase;
+      if (typeof window !== 'undefined') {
+        const { createClient } = await import('./supabase-client');
+        supabase = createClient();
+      } else {
+        // 服务器端使用服务器客户端
+        const { createClient } = await import('./supabase-server');
+        supabase = await createClient();
+      }
       
       const { count } = await supabase
         .from('top_cryptocurrencies')
@@ -227,9 +234,16 @@ export const appInitializer = new AppInitializer();
 
 // 自动启动初始化（延迟启动避免阻塞应用启动）
 // 根据配置决定是否自动初始化
-if (typeof window === 'undefined' && schedulerConfig.dataSync.enabled) {
-  setTimeout(() => {
-    console.log('⏳ 准备启动应用初始化...');
-    appInitializer.initialize().catch(console.error);
-  }, schedulerConfig.dataSync.initialDelayMs || 2000); // 使用配置的延迟时间
+// 只在运行时执行，不在构建时执行
+if (typeof window === 'undefined' && 
+    process.env.NODE_ENV !== 'production' && 
+    process.env.NEXT_PHASE !== 'phase-production-build' &&
+    schedulerConfig.dataSync.enabled) {
+  // 确保有环境变量才执行
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    setTimeout(() => {
+      console.log('⏳ 准备启动应用初始化...');
+      appInitializer.initialize().catch(console.error);
+    }, schedulerConfig.dataSync.initialDelayMs || 2000); // 使用配置的延迟时间
+  }
 }

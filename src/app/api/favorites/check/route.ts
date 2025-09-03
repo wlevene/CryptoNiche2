@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert to object for easy lookup
-    const favoritesMap = data?.reduce((acc, item) => {
+    const favoritesMap = data?.reduce((acc: any, item: any) => {
       acc[item.crypto_id] = true;
       return acc;
     }, {} as Record<number, boolean>) || {};

@@ -60,7 +60,7 @@ export class CryptoRepository {
       logger.database('getCryptocurrencies', 'cryptocurrencies', data?.length);
       
       // Map database fields to CryptoCurrency interface
-      return (data || []).map(item => ({
+      return (data || []).map((item: any) => ({
         ...item,
         rank: item.cmc_rank,
         change_24h: item.percent_change_24h,
@@ -139,7 +139,7 @@ export class CryptoRepository {
       logger.database('searchCryptocurrencies', 'cryptocurrencies', data?.length);
       
       // Map database fields to CryptoCurrency interface
-      return (data || []).map(item => ({
+      return (data || []).map((item: any) => ({
         ...item,
         rank: item.cmc_rank,
         change_24h: item.percent_change_24h,

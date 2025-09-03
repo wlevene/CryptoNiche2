@@ -238,9 +238,9 @@ export class CryptocurrencyService {
       };
     }
 
-    const totalMarketCap = data.reduce((sum, crypto) => sum + (crypto.market_cap || 0), 0);
-    const total24hVolume = data.reduce((sum, crypto) => sum + (crypto.volume_24h || 0), 0);
-    const btcMarketCap = data.find(crypto => crypto.rank === 1)?.market_cap || 0;
+    const totalMarketCap = data.reduce((sum: number, crypto: any) => sum + (crypto.market_cap || 0), 0);
+    const total24hVolume = data.reduce((sum: number, crypto: any) => sum + (crypto.volume_24h || 0), 0);
+    const btcMarketCap = data.find((crypto: any) => crypto.rank === 1)?.market_cap || 0;
     const btcDominance = totalMarketCap > 0 ? (btcMarketCap / totalMarketCap) * 100 : 0;
 
     return {

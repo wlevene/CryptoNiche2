@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       const { data: stats, error: statsError } = await supabase
         .from('price_history')
         .select('interval_type')
-        .then(result => {
+        .then((result: any) => {
           if (result.error) return result;
           
           const counts = result.data?.reduce((acc: any, item: any) => {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       const { data: intervalStats, error: intervalError } = await supabase
         .from('price_history')
         .select('interval_type')
-        .then(result => {
+        .then((result: any) => {
           if (result.error) return result;
           
           const counts = result.data?.reduce((acc: any, item: any) => {

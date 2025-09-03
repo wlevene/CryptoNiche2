@@ -3,10 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { AppInitializerProvider } from "@/components/providers/app-initializer-provider";
 import { Navbar } from "@/components/layout/navbar";
-
-// 导入应用初始化器（服务器端自动执行）
-import "@/lib/app-initializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +38,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col">
+          <AppInitializerProvider>
+            <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col">
             <Navbar />
             <main className="flex-1">
               {children}
@@ -59,8 +58,9 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
-          </div>
-          <ToastProvider />
+            </div>
+            <ToastProvider />
+          </AppInitializerProvider>
         </ThemeProvider>
       </body>
     </html>
