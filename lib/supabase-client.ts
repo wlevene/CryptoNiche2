@@ -4,15 +4,20 @@ import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from './supabase'
 
 export const createClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Access environment variables directly
+  // Next.js will replace these at build time
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   
   // Check if we're in the browser and variables are defined
   if (typeof window !== 'undefined') {
     // In browser, check if env vars exist
     if (!supabaseUrl || !supabaseAnonKey || 
-        supabaseUrl === 'undefined' || supabaseAnonKey === 'undefined') {
+        supabaseUrl === 'undefined' || supabaseAnonKey === 'undefined' ||
+        supabaseUrl === '' || supabaseAnonKey === '') {
       console.error('Supabase environment variables are not properly configured');
+      console.error('URL:', supabaseUrl);
+      console.error('Key:', supabaseAnonKey ? 'present but invalid' : 'missing');
       // Return a client that will show errors to help debug
       return {
         auth: {

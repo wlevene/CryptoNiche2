@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createClient } from "@/lib/supabase-client";
+import { getSupabaseClient } from "@/lib/supabase-browser";
 import { Mail, Lock, User, Github, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordStrength } from "./password-strength";
@@ -28,7 +28,14 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [supabase] = useState(() => createClient());
+  const [supabase] = useState(() => {
+    try {
+      return getSupabaseClient();
+    } catch (error) {
+      console.error('Failed to initialize Supabase:', error);
+      return null;
+    }
+  });
 
   const [signUpData, setSignUpData] = useState({
     name: "",
@@ -59,6 +66,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!supabase) {
+      toast.error('Authentication service is not available. Please try again later.');
+      return;
+    }
     
     // Mark all fields as touched
     setTouched({
