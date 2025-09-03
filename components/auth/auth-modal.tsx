@@ -132,6 +132,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!supabase) {
+      toast.error('Authentication service is not available. Please try again later.');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -160,6 +166,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   };
 
   const handleGithubSignIn = async () => {
+    if (!supabase) {
+      toast.error('Authentication service is not available. Please try again later.');
+      return;
+    }
+    
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({

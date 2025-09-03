@@ -2,7 +2,7 @@
  * 收藏功能服务
  */
 
-import { createClient } from '@/lib/supabase-client';
+import { getSupabaseClient } from '@/lib/supabase-browser';
 import type { TopCrypto } from '@/lib/types/crypto';
 
 export interface FavoriteItem {
@@ -32,7 +32,12 @@ export class FavoritesService {
   private supabase: any;
   
   constructor() {
-    this.supabase = createClient();
+    try {
+      this.supabase = getSupabaseClient();
+    } catch (error) {
+      console.error('Failed to initialize Supabase in FavoritesService:', error);
+      this.supabase = null;
+    }
   }
 
   /**
