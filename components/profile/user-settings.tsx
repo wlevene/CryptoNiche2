@@ -196,60 +196,10 @@ export function UserSettings() {
         </CardContent>
       </Card>
 
-      {/* Display Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Display Settings
-          </CardTitle>
-          <CardDescription>
-            Customize your viewing experience
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Currency</Label>
-              <Select
-                value={preferences.currency}
-                onValueChange={(value) => handlePreferenceChange('currency', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                  <SelectItem value="BTC">BTC (₿)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Theme</Label>
-              <Select
-                value={preferences.theme}
-                onValueChange={(value: 'light' | 'dark' | 'system') => 
-                  handlePreferenceChange('theme', value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Security */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
@@ -284,7 +234,7 @@ export function UserSettings() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Actions */}
       <div className="flex justify-between">
