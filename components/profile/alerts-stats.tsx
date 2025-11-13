@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, TrendingUp, CheckCircle, AlertTriangle } from "lucide-react";
+import { alertServiceV2 } from "@/lib/services/alert-service-v2";
 
 interface AlertsStatsData {
   totalAlerts: number;
@@ -32,44 +33,40 @@ export function AlertsStats() {
   const fetchStats = async () => {
     try {
       setIsLoading(true);
-      
-      // Fetch alerts stats
-      const alertsResponse = await fetch('/api/alerts');
-      const alertsResult = await alertsResponse.json();
-      
-      // Fetch notifications stats
-      const notificationsResponse = await fetch('/api/alerts/notifications');
-      const notificationsResult = await notificationsResponse.json();
 
-      if (alertsResult.success && notificationsResult.success) {
-        const alerts = alertsResult.data || [];
-        const notifications = notificationsResult.data || [];
-        
-        const totalAlerts = alerts.length;
-        const activeAlerts = alerts.filter((alert: any) => alert.is_active).length;
-        const inactiveAlerts = totalAlerts - activeAlerts;
-        
-        const totalNotifications = notifications.length;
-        const recentNotifications = notifications.filter((notification: any) => {
-          const createdAt = new Date(notification.created_at);
-          const sevenDaysAgo = new Date();
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-          return createdAt >= sevenDaysAgo;
-        }).length;
-        
-        const successfulAlerts = notifications.filter((notification: any) => 
-          notification.status === 'sent'
-        ).length;
+      // Fetch alerts and notifications using service
+      const [alertsResult, notificationsResult] = await Promise.all([
+        alertServiceV2.getAlerts(),
+        alertServiceV2.getNotifications()
+      ]);
 
-        setStats({
-          totalAlerts,
-          activeAlerts,
-          inactiveAlerts,
-          totalNotifications,
-          recentNotifications,
-          successfulAlerts,
-        });
-      }
+      const alerts = alertsResult.items || [];
+      const notifications = notificationsResult.items || [];
+
+      const totalAlerts = alerts.length;
+      const activeAlerts = alerts.filter((alert: any) => alert.is_active).length;
+      const inactiveAlerts = totalAlerts - activeAlerts;
+
+      const totalNotifications = notifications.length;
+      const recentNotifications = notifications.filter((notification: any) => {
+        const createdAt = new Date(notification.created_at);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return createdAt >= sevenDaysAgo;
+      }).length;
+
+      const successfulAlerts = notifications.filter((notification: any) =>
+        notification.status === 'sent'
+      ).length;
+
+      setStats({
+        totalAlerts,
+        activeAlerts,
+        inactiveAlerts,
+        totalNotifications,
+        recentNotifications,
+        successfulAlerts,
+      });
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {

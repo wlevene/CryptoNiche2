@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { AppInitializerProvider } from "@/components/providers/app-initializer-provider";
+import { QueryProvider } from "@/lib/providers/query-provider";
 import { Navbar } from "@/components/layout/navbar";
 
 const geistSans = Geist({
@@ -39,29 +40,31 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppInitializerProvider>
-            <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col">
-            <Navbar />
-            <main className="flex-1">
-              {children}
-            </main>
-            
-            {/* Footer */}
-            <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="container mx-auto px-4">
-                <div className="py-8">
-                  <div className="text-center text-muted-foreground">
-                    <p>&copy; 2024 CryptoNiche. All rights reserved.</p>
-                    <p className="text-sm mt-2">
-                      Real-time cryptocurrency market data and intelligent analysis platform
-                    </p>
+          <QueryProvider>
+            <AppInitializerProvider>
+              <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col">
+              <Navbar />
+              <main className="flex-1">
+                {children}
+              </main>
+
+              {/* Footer */}
+              <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="container mx-auto px-4">
+                  <div className="py-8">
+                    <div className="text-center text-muted-foreground">
+                      <p>&copy; 2024 CryptoNiche. All rights reserved.</p>
+                      <p className="text-sm mt-2">
+                        Real-time cryptocurrency market data and intelligent analysis platform
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </footer>
               </div>
-            </footer>
-            </div>
-            <ToastProvider />
-          </AppInitializerProvider>
+              <ToastProvider />
+            </AppInitializerProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

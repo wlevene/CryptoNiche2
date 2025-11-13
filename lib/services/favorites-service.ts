@@ -1,184 +1,157 @@
 /**
- * 收藏功能服务
+ * 收藏服务
+ * 封装所有与收藏相关的 API 调用
+ *
+ * 注意：收藏接口直接调用后端 API（不经过 Next.js API 路由）
+ * 路径：/core/favorite, /core/unfavorite, /core/favorites
  */
 
-import { getSupabaseClient } from '@/lib/supabase-browser';
-import type { TopCrypto } from '@/lib/types/crypto';
+import { env } from '@/lib/config/env';
+import type { Currency } from '@/lib/types/api-v1';
 
-export interface FavoriteItem {
-  crypto_id: number;
-  created_at: string;
-  crypto: {
-    id: number;
-    symbol: string;
-    name: string;
-    slug: string;
-    cmc_rank: number;
-    is_active: boolean;
-  };
-  price_data: {
-    id: number;
-    symbol: string;
-    name: string;
-    price: number;
-    market_cap: number;
-    volume_24h: number;
-    percent_change_24h: number;
-    cmc_rank: number;
-  } | null;
+/**
+ * 收藏请求
+ */
+export interface FavoriteReq {
+  cmc_id: number;
 }
 
+/**
+ * 收藏响应
+ */
+export interface FavoriteReply {
+  success: boolean;
+}
+
+/**
+ * 收藏列表响应
+ */
+export interface FavoriteListReply {
+  items: Currency[];
+}
+
+/**
+ * 收藏服务类
+ *
+ * 直接调用后端 API，需要 JWT Token
+ */
 export class FavoritesService {
-  private supabase: any;
-  
-  constructor() {
-    try {
-      this.supabase = getSupabaseClient();
-    } catch (error) {
-      console.error('Failed to initialize Supabase in FavoritesService:', error);
-      this.supabase = null;
+  /**
+   * 获取后端 API 基础 URL
+   */
+  private getBaseURL(): string {
+    // 优先从环境变量读取
+    if (typeof window !== 'undefined') {
+      return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7881';
     }
+    return env.api.baseUrl;
   }
 
   /**
-   * 获取用户收藏列表
+   * 获取 Token
    */
-  async getFavorites(): Promise<FavoriteItem[]> {
+  private getToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
+    }
+    return null;
+  }
+
+  /**
+   * 构建请求头
+   */
+  private getHeaders(): HeadersInit {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
+
+  /**
+   * 通用请求方法
+   */
+  private async request<T>(
+    path: string,
+    method: string,
+    body?: any
+  ): Promise<T> {
+    const baseURL = this.getBaseURL();
+    const url = `${baseURL}${path}`;
+
     try {
-      const response = await fetch('/api/favorites', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch(url, {
+        method,
+        headers: this.getHeaders(),
+        body: body ? JSON.stringify(body) : undefined,
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`HTTP ${response.status} response:`, errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       const result = await response.json();
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch favorites');
+      // 后端返回格式: { code: 0, msg: "OK", data: {...} }
+      // 检查是否有 data 字段
+      if (result.data !== undefined) {
+        return result.data;
       }
 
-      return result.data || [];
+      // 如果没有 data 字段，直接返回结果（兼容其他格式）
+      return result;
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      console.error(`API request failed: ${method} ${url}`, error);
       throw error;
     }
   }
 
   /**
-   * 添加到收藏
+   * 添加收藏
    */
-  async addToFavorites(cryptoId: number): Promise<void> {
-    try {
-      const response = await fetch('/api/favorites', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ crypto_id: cryptoId }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to add to favorites');
-      }
-    } catch (error) {
-      console.error('Error adding to favorites:', error);
-      throw error;
-    }
+  async addFavorite(cmcId: number): Promise<FavoriteReply> {
+    return this.request<FavoriteReply>('/core/favorite', 'POST', {
+      cmc_id: cmcId,
+    });
   }
 
   /**
-   * 从收藏中移除
+   * 取消收藏
    */
-  async removeFromFavorites(cryptoId: number): Promise<void> {
-    try {
-      const response = await fetch(`/api/favorites?crypto_id=${cryptoId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to remove from favorites');
-      }
-    } catch (error) {
-      console.error('Error removing from favorites:', error);
-      throw error;
-    }
+  async removeFavorite(cmcId: number): Promise<FavoriteReply> {
+    return this.request<FavoriteReply>('/core/unfavorite', 'POST', {
+      cmc_id: cmcId,
+    });
   }
 
   /**
-   * 批量检查收藏状态
+   * 获取收藏列表
    */
-  async checkFavoriteStatus(cryptoIds: number[]): Promise<Record<number, boolean>> {
-    if (cryptoIds.length === 0) {
-      return {};
-    }
-
-    try {
-      const response = await fetch(`/api/favorites/check?crypto_ids=${cryptoIds.join(',')}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        // If user not authenticated, return empty object
-        if (response.status === 401) {
-          return {};
-        }
-        throw new Error(result.error || 'Failed to check favorite status');
-      }
-
-      return result.data || {};
-    } catch (error) {
-      console.error('Error checking favorite status:', error);
-      // Return empty object on error to allow graceful degradation
-      return {};
-    }
+  async getFavorites(): Promise<FavoriteListReply> {
+    return this.request<FavoriteListReply>('/core/favorites', 'GET');
   }
 
   /**
-   * 转换收藏项目为TopCrypto格式
+   * 切换收藏状态（添加或取消）
    */
-  convertToTopCrypto(favorites: FavoriteItem[]): TopCrypto[] {
-    return favorites
-      .filter(fav => fav.price_data !== null)
-      .map(fav => ({
-        id: fav.crypto_id,
-        symbol: fav.price_data!.symbol,
-        name: fav.price_data!.name,
-        price: fav.price_data!.price,
-        change: fav.price_data!.percent_change_24h,
-        volume: this.formatNumber(fav.price_data!.volume_24h || 0),
-        marketCap: this.formatNumber(fav.price_data!.market_cap || 0),
-        rank: fav.price_data!.cmc_rank,
-      }));
-  }
-
-  /**
-   * 格式化数字显示
-   */
-  private formatNumber(num: number): string {
-    if (num >= 1e12) {
-      return `${(num / 1e12).toFixed(2)}T`;
-    } else if (num >= 1e9) {
-      return `${(num / 1e9).toFixed(2)}B`;
-    } else if (num >= 1e6) {
-      return `${(num / 1e6).toFixed(2)}M`;
+  async toggleFavorite(cmcId: number, isFavorite: boolean): Promise<FavoriteReply> {
+    if (isFavorite) {
+      return this.removeFavorite(cmcId);
     } else {
-      return num.toLocaleString();
+      return this.addFavorite(cmcId);
     }
   }
 }
 
-// 导出单例实例
+// 导出单例
 export const favoritesService = new FavoritesService();
+
+// 默认导出
+export default favoritesService;

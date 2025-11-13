@@ -1,115 +1,96 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Heart } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
-import { favoritesService } from "@/lib/services/favorites-service";
+import { Heart } from "lucide-react";
 import { toast } from "sonner";
+import { useToggleFavorite } from "@/lib/hooks/use-favorites-query";
+import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {
-  cryptoId: number;
-  cryptoName: string;
+  cmcId: number;
+  isFavorite: boolean;
+  symbol?: string;
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
+  showText?: boolean;
   className?: string;
-  showTooltip?: boolean;
 }
 
-export function FavoriteButton({ 
-  cryptoId, 
-  cryptoName, 
-  className = "",
-  showTooltip = true 
+export function FavoriteButton({
+  cmcId,
+  isFavorite: initialIsFavorite,
+  symbol,
+  variant = "ghost",
+  size = "icon",
+  showText = false,
+  className,
 }: FavoriteButtonProps) {
-  const { user, loading } = useAuth();
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  const toggleFavorite = useToggleFavorite();
 
-  // Check favorite status when user is authenticated
-  useEffect(() => {
-    if (user && !loading) {
-      checkFavoriteStatus();
-    } else if (!user) {
-      setIsFavorite(false);
-    }
-  }, [user, loading, cryptoId]);
+  const handleToggle = async (e: React.MouseEvent) => {
+    // 防止事件冒泡（如果按钮在卡片内）
+    e.stopPropagation();
+    e.preventDefault();
 
-  const checkFavoriteStatus = async () => {
-    try {
-      const statusMap = await favoritesService.checkFavoriteStatus([cryptoId]);
-      setIsFavorite(statusMap[cryptoId] || false);
-    } catch (error) {
-      console.error('Error checking favorite status:', error);
-    }
-  };
-
-  const handleFavoriteClick = async () => {
-    if (!user) {
+    // 检查是否登录
+    if (!isAuthenticated) {
       toast.error("Please sign in to add favorites");
       return;
     }
 
-    if (isLoading) return;
+    // 乐观更新 UI
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
 
-    setIsLoading(true);
-    
     try {
-      if (isFavorite) {
-        await favoritesService.removeFromFavorites(cryptoId);
-        setIsFavorite(false);
-        toast.success(`${cryptoName} removed from favorites`);
+      await toggleFavorite.mutateAsync({
+        cmcId,
+        isFavorite,
+      });
+
+      // 显示成功提示
+      if (newFavoriteState) {
+        toast.success(symbol ? `Added ${symbol} to favorites` : "Added to favorites");
       } else {
-        await favoritesService.addToFavorites(cryptoId);
-        setIsFavorite(true);
-        toast.success(`${cryptoName} added to favorites`);
+        toast.success(symbol ? `Removed ${symbol} from favorites` : "Removed from favorites");
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      
-      // Handle specific error cases
-      if (errorMessage.includes('already in favorites')) {
-        toast.info(`${cryptoName} is already in favorites`);
-        setIsFavorite(true);
-      } else if (errorMessage.includes('Authentication required')) {
-        toast.error("Please sign in to manage favorites");
-      } else {
-        toast.error(`Failed to ${isFavorite ? 'remove' : 'add'} favorite`);
-      }
-    } finally {
-      setIsLoading(false);
+      // 如果失败，回滚 UI 状态
+      setIsFavorite(isFavorite);
+      console.error("Error toggling favorite:", error);
+      toast.error("Failed to update favorite");
     }
   };
 
-  // Show loading state while checking auth
-  if (loading) {
-    return (
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        disabled
-        className={`h-8 w-8 p-0 ${className}`}
-      >
-        <Heart className="h-4 w-4" />
-      </Button>
-    );
-  }
-
   return (
-    <Button 
-      variant="ghost" 
-      size="sm" 
-      onClick={handleFavoriteClick}
-      disabled={isLoading}
-      className={`h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 ${className}`}
-      title={showTooltip ? (isFavorite ? `Remove ${cryptoName} from favorites` : `Add ${cryptoName} to favorites`) : undefined}
+    <Button
+      variant={variant}
+      size={size}
+      onClick={handleToggle}
+      disabled={toggleFavorite.isPending}
+      className={cn(
+        "transition-all duration-200",
+        isFavorite && "text-red-500 hover:text-red-600",
+        className
+      )}
+      aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
     >
-      <Heart 
-        className={`h-4 w-4 transition-colors ${
-          isFavorite 
-            ? 'fill-red-500 text-red-500' 
-            : 'text-gray-400 hover:text-red-500'
-        } ${isLoading ? 'animate-pulse' : ''}`}
+      <Heart
+        className={cn(
+          "h-4 w-4 transition-all duration-200",
+          isFavorite && "fill-current",
+          showText && "mr-2"
+        )}
       />
+      {showText && (
+        <span className="text-sm">
+          {isFavorite ? "Favorited" : "Add to Favorites"}
+        </span>
+      )}
     </Button>
   );
 }

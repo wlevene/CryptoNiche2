@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Bell, CheckCircle, XCircle, Clock, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { alertServiceV2 } from "@/lib/services/alert-service-v2";
 
 interface NotificationItem {
   id: string;
@@ -42,13 +43,10 @@ export function NotificationHistory() {
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/alerts/notifications?limit=${limit}`);
-      const result = await response.json();
-
-      if (result.success) {
-        setNotifications(result.data || []);
-      } else {
-        toast.error('Failed to load notification history');
+      const result = await alertServiceV2.getNotifications({ limit });
+      // result 是 NotificationListReply: { items: Notification[], total: number }
+      if (result && result.items) {
+        setNotifications(result.items as any);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);

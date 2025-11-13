@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check-env": "node scripts/check-env.js",
+    "predev": "npm run check-env"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -20,8 +22,6 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
-    "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.55.0",
     "@tanstack/react-query": "^5.85.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

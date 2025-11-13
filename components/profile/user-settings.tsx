@@ -22,7 +22,7 @@ interface UserPreferences {
 }
 
 export function UserSettings() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [preferences, setPreferences] = useState<UserPreferences>({
     emailNotifications: true,
     pushNotifications: true,
@@ -77,9 +77,7 @@ export function UserSettings() {
 
   const handleSignOut = async () => {
     try {
-      const { createClient } = await import('@/lib/supabase-client');
-      const supabase = createClient();
-      await supabase.auth.signOut();
+      await signOut();
       toast.success('Signed out successfully');
       window.location.href = '/';
     } catch (error) {
@@ -114,12 +112,21 @@ export function UserSettings() {
               />
             </div>
             <div>
-              <Label htmlFor="name">Display Name</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input
-                id="name"
+                id="firstName"
                 type="text"
-                value={user?.user_metadata?.name || ''}
-                placeholder="Enter your name"
+                value={user?.first_name || ''}
+                placeholder="Enter your first name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                type="text"
+                value={user?.last_name || ''}
+                placeholder="Enter your last name"
               />
             </div>
           </div>

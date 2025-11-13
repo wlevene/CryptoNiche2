@@ -5,12 +5,12 @@ import { PasswordValidation, getPasswordStrengthColor, getPasswordStrengthText }
 import { cn } from "@/lib/utils";
 
 interface PasswordStrengthProps {
-  validation: PasswordValidation;
   password: string;
+  validation?: PasswordValidation;
 }
 
-export function PasswordStrength({ validation, password }: PasswordStrengthProps) {
-  if (!password) return null;
+export function PasswordStrength({ password, validation }: PasswordStrengthProps) {
+  if (!password || !validation) return null;
 
   const { score, rules, feedback } = validation;
   const strengthColor = getPasswordStrengthColor(score);

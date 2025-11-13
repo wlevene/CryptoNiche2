@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Trash2, Bell, BellOff, TrendingUp, Target } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
 
 interface UserAlert {
   id: string;
@@ -42,12 +43,13 @@ export function AlertList({ onRefresh }: AlertListProps) {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch('/api/alerts');
+      const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7881';
+      const response = await fetchWithAuth(`${baseURL}/core/alerts`);
       const result = await response.json();
-      if (result.success) {
-        setAlerts(result.data);
-      } else {
-        toast.error('Failed to load alerts');
+
+      // 后端返回格式: { code: 0, msg: "OK", data: { items: [], total: 0 } }
+      if (result.code === 0 && result.data) {
+        setAlerts(result.data.items || []);
       }
     } catch (error) {
       console.error('Error fetching alerts:', error);
@@ -59,21 +61,16 @@ export function AlertList({ onRefresh }: AlertListProps) {
 
   const toggleAlert = async (alertId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/alerts/${alertId}/toggle`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_active: isActive }),
+      const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7881';
+      const response = await fetchWithAuth(`${baseURL}/core/alert/update`, {
+        method: 'POST',
+        body: JSON.stringify({ id: alertId, is_active: isActive }),
       });
-
       const result = await response.json();
-      if (result.success) {
+      if (result.code === 0) {
         toast.success(`Alert ${isActive ? 'activated' : 'deactivated'}`);
         fetchAlerts();
         onRefresh?.();
-      } else {
-        toast.error(result.error || 'Failed to update alert');
       }
     } catch (error) {
       console.error('Error toggling alert:', error);
@@ -87,17 +84,16 @@ export function AlertList({ onRefresh }: AlertListProps) {
     }
 
     try {
-      const response = await fetch(`/api/alerts/${alertId}`, {
-        method: 'DELETE',
+      const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7881';
+      const response = await fetchWithAuth(`${baseURL}/core/alert/delete`, {
+        method: 'POST',
+        body: JSON.stringify({ id: alertId }),
       });
-
       const result = await response.json();
-      if (result.success) {
+      if (result.code === 0) {
         toast.success('Alert deleted successfully');
         fetchAlerts();
         onRefresh?.();
-      } else {
-        toast.error(result.error || 'Failed to delete alert');
       }
     } catch (error) {
       console.error('Error deleting alert:', error);

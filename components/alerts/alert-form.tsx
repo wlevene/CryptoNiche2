@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Loader2, Bell, TrendingUp } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
 
 interface Cryptocurrency {
   id: number;
@@ -40,10 +41,12 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
 
   const fetchCryptocurrencies = async () => {
     try {
-      const response = await fetch('/api/crypto/list?startRank=1&endRank=100');
+      const response = await fetch('/api/v1/currency/list?page=1&page_size=100');
       const result = await response.json();
-      if (result.success) {
-        setCryptocurrencies(result.data);
+      if (result.success && result.data) {
+        // API 返回的是 { success: true, data: { items: [...], total: ..., page: ..., page_size: ... } }
+        const items = result.data.items || [];
+        setCryptocurrencies(items);
       }
     } catch (error) {
       console.error('Error fetching cryptocurrencies:', error);
@@ -61,25 +64,23 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
         alert_type: formData.alert_type,
         direction: formData.direction,
         notification_frequency: formData.notification_frequency,
-        ...(formData.alert_type === 'price_change' 
+        ...(formData.alert_type === 'price_change'
           ? { threshold_percentage: parseFloat(formData.threshold_percentage) }
           : { threshold_price: parseFloat(formData.threshold_price) }
         )
       };
 
-      const response = await fetch('/api/alerts', {
+      const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7881';
+      const response = await fetchWithAuth(`${baseURL}/core/alert`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
 
-      if (result.success) {
+      if (result.code === 0) {
         toast.success('Price alert created successfully!');
         onSuccess?.();
+
         // Reset form
         setFormData({
           crypto_id: '',
@@ -90,7 +91,7 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
           notification_frequency: 'immediate',
         });
       } else {
-        toast.error(result.error || 'Failed to create alert');
+        toast.error(result.msg || 'Failed to create alert');
       }
     } catch (error) {
       console.error('Error creating alert:', error);
@@ -100,7 +101,8 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
     }
   };
 
-  const selectedCrypto = cryptocurrencies.find(c => c.id === parseInt(formData.crypto_id));
+  // cryptocurrencies 是 CurrencyDetail[] 类型，每项包含 currency 和 price
+  const selectedCrypto = cryptocurrencies.find(c => c.currency?.cmc_id === parseInt(formData.crypto_id));
 
   return (
     <Card>
@@ -123,18 +125,18 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
                 <SelectValue placeholder="Select a cryptocurrency" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg backdrop-blur-sm max-h-60 z-50">
-                {cryptocurrencies.map((crypto) => (
-                  <SelectItem 
-                    key={crypto.id} 
-                    value={crypto.id.toString()}
+                {cryptocurrencies.map((item) => (
+                  <SelectItem
+                    key={item.currency.cmc_id}
+                    value={item.currency.cmc_id?.toString() || ''}
                     className="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{crypto.symbol}</span>
-                      <span className="text-muted-foreground">{crypto.name}</span>
-                      {crypto.price && (
+                      <span className="font-medium">{item.currency.symbol}</span>
+                      <span className="text-muted-foreground">{item.currency.name}</span>
+                      {item.price?.price && (
                         <span className="text-sm text-muted-foreground">
-                          ${crypto.price.toLocaleString()}
+                          ${item.price.price.toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -193,7 +195,7 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
                 step="0.01"
                 value={formData.threshold_price}
                 onChange={(e) => setFormData({ ...formData, threshold_price: e.target.value })}
-                placeholder={selectedCrypto ? `e.g., ${selectedCrypto.price}` : "Enter target price"}
+                placeholder={selectedCrypto?.price?.price ? `e.g., ${selectedCrypto.price.price}` : "Enter target price"}
                 required
               />
               <p className="text-sm text-muted-foreground">

@@ -34,36 +34,51 @@ export function Navbar() {
               href="/"
               className={cn(
                 "transition-colors font-medium",
-                pathname === "/" 
-                  ? "text-foreground" 
+                pathname === "/"
+                  ? "text-foreground"
                   : "text-foreground/60 hover:text-foreground"
               )}
             >
               Home
             </Link>
-            {/* <Link
-              href="/alerts"
-              className={cn(
-                "transition-colors font-medium",
-                pathname === "/alerts" 
-                  ? "text-foreground" 
-                  : "text-foreground/60 hover:text-foreground"
-              )}
-            >
-              Alerts
-            </Link> */}
-            {user && (
-              <Link
-                href="/profile"
-                className={cn(
-                  "transition-colors font-medium",
-                  pathname === "/profile" 
-                    ? "text-foreground" 
-                    : "text-foreground/60 hover:text-foreground"
-                )}
-              >
-                Profile
-              </Link>
+
+            {/* 登录后显示的菜单 */}
+            {user ? (
+              <>
+                <Link
+                  href="/profile"
+                  className={cn(
+                    "transition-colors font-medium",
+                    pathname === "/profile"
+                      ? "text-foreground"
+                      : "text-foreground/60 hover:text-foreground"
+                  )}
+                >
+                  Profile
+                </Link>
+              </>
+            ) : (
+              /* 登录前显示的菜单 */
+              <>
+                <Link
+                  href="/#features"
+                  className={cn(
+                    "transition-colors font-medium",
+                    "text-foreground/60 hover:text-foreground"
+                  )}
+                >
+                  Features
+                </Link>
+                <Link
+                  href="/#about"
+                  className={cn(
+                    "transition-colors font-medium",
+                    "text-foreground/60 hover:text-foreground"
+                  )}
+                >
+                  About
+                </Link>
+              </>
             )}
           </div>
 
@@ -117,45 +132,62 @@ export function Navbar() {
                 href="/"
                 className={cn(
                   "transition-colors font-medium",
-                  pathname === "/" 
-                    ? "text-foreground" 
+                  pathname === "/"
+                    ? "text-foreground"
                     : "text-foreground/60 hover:text-foreground"
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Home
               </Link>
-              {/* <Link
-                href="/alerts"
-                className={cn(
-                  "transition-colors font-medium",
-                  pathname === "/alerts" 
-                    ? "text-foreground" 
-                    : "text-foreground/60 hover:text-foreground"
-                )}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Alerts
-              </Link> */}
-              {user && (
-                <Link
-                  href="/profile"
-                  className={cn(
-                    "transition-colors font-medium",
-                    pathname === "/profile" 
-                      ? "text-foreground" 
-                      : "text-foreground/60 hover:text-foreground"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Profile
-                </Link>
+
+              {/* 登录后的菜单 */}
+              {user ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className={cn(
+                      "transition-colors font-medium",
+                      pathname === "/profile"
+                        ? "text-foreground"
+                        : "text-foreground/60 hover:text-foreground"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                </>
+              ) : (
+                /* 登录前的菜单 */
+                <>
+                  <Link
+                    href="/#features"
+                    className={cn(
+                      "transition-colors font-medium",
+                      "text-foreground/60 hover:text-foreground"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Features
+                  </Link>
+                  <Link
+                    href="/#about"
+                    className={cn(
+                      "transition-colors font-medium",
+                      "text-foreground/60 hover:text-foreground"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About
+                  </Link>
+                </>
               )}
-              
+
+              {/* 登录前显示登录按钮 */}
               {!user && (
                 <div className="flex space-x-2 pt-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setAuthModalOpen(true);
@@ -164,7 +196,7 @@ export function Navbar() {
                   >
                     Sign In
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={() => {
                       setAuthModalOpen(true);

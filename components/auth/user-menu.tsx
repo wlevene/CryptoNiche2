@@ -1,6 +1,5 @@
 "use client";
 
-import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, User } from "@/hooks/use-auth";
 import { Settings, LogOut, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,12 +30,24 @@ export function UserMenu({ user }: UserMenuProps) {
     }
   };
 
-  const getUserInitials = (email: string) => {
-    return email.substring(0, 2).toUpperCase();
+  const getUserInitials = () => {
+    if (user.first_name && user.last_name) {
+      return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+    }
+    if (user.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
   };
 
   const getUserDisplayName = () => {
-    return user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+    if (user.first_name && user.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    if (user.first_name) {
+      return user.first_name;
+    }
+    return user.email?.split('@')[0] || 'User';
   };
 
   return (
@@ -44,9 +55,9 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.user_metadata?.avatar_url} />
+            <AvatarImage src={user.avatar} />
             <AvatarFallback>
-              {getUserInitials(user.email || '')}
+              {getUserInitials()}
             </AvatarFallback>
           </Avatar>
         </Button>

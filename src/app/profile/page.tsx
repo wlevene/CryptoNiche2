@@ -70,13 +70,13 @@ export default function ProfilePage() {
             <BarChart3 className="h-4 w-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="alerts" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            My Alerts
-          </TabsTrigger>
           <TabsTrigger value="favorites" className="flex items-center gap-2">
             <Heart className="h-4 w-4" />
             Favorites
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Alerts
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <History className="h-4 w-4" />
@@ -92,6 +92,20 @@ export default function ProfilePage() {
           <AlertsStats />
         </TabsContent>
 
+        <TabsContent value="favorites" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Favorite Cryptocurrencies</CardTitle>
+              <CardDescription>
+                Track your favorite cryptocurrencies in one place
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FavoritesList />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="alerts" className="space-y-6">
           <Card>
             <CardHeader>
@@ -102,20 +116,6 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <UserAlertsList />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="favorites" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Favorite Cryptocurrencies</CardTitle>
-              <CardDescription>
-                Your watchlist of favorite cryptocurrencies for quick access
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FavoritesList />
             </CardContent>
           </Card>
         </TabsContent>

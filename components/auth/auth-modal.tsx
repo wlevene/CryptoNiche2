@@ -12,12 +12,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSupabaseClient } from "@/lib/supabase-browser";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordStrength } from "./password-strength";
 import { validateForm, FormValidation } from "@/lib/password-validation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AuthModalProps {
   open: boolean;
@@ -25,20 +25,14 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onOpenChange }: AuthModalProps) {
+  const { signIn, signUp } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [supabase] = useState(() => {
-    try {
-      return getSupabaseClient();
-    } catch (error) {
-      console.error('Failed to initialize Supabase:', error);
-      return null;
-    }
-  });
 
   const [signUpData, setSignUpData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -51,7 +45,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const [validation, setValidation] = useState<FormValidation | null>(null);
   const [touched, setTouched] = useState({
-    name: false,
+    firstName: false,
+    lastName: false,
     email: false,
     password: false,
     confirmPassword: false,
@@ -59,37 +54,53 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   // Validate form whenever signUpData changes
   useEffect(() => {
-    if (signUpData.name || signUpData.email || signUpData.password || signUpData.confirmPassword) {
-      setValidation(validateForm(signUpData));
+    if (signUpData.firstName || signUpData.email || signUpData.password || signUpData.confirmPassword) {
+      // 构造验证数据（兼容旧的验证函数）
+      const dataForValidation = {
+        name: `${signUpData.firstName} ${signUpData.lastName}`.trim(),
+        email: signUpData.email,
+        password: signUpData.password,
+        confirmPassword: signUpData.confirmPassword,
+      };
+      setValidation(validateForm(dataForValidation));
     }
   }, [signUpData]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!supabase) {
-      toast.error('Authentication service is not available. Please try again later.');
-      return;
-    }
-    
+
     // Mark all fields as touched
     setTouched({
-      name: true,
+      firstName: true,
+      lastName: true,
       email: true,
       password: true,
       confirmPassword: true,
     });
 
-    // Validate form
-    const currentValidation = validateForm(signUpData);
-    setValidation(currentValidation);
+    // 基本验证
+    if (!signUpData.firstName.trim()) {
+      toast.error("请输入名字");
+      return;
+    }
 
-    // Check if form is valid
-    if (!currentValidation.name.isValid || 
-        !currentValidation.email.isValid || 
-        !currentValidation.password.isValid || 
-        !currentValidation.confirmPassword.isValid) {
-      toast.error("Please fix the errors in the form");
+    if (!signUpData.lastName.trim()) {
+      toast.error("请输入姓氏");
+      return;
+    }
+
+    if (!signUpData.email.trim()) {
+      toast.error("请输入邮箱");
+      return;
+    }
+
+    if (signUpData.password.length < 8) {
+      toast.error("密码至少需要 8 位");
+      return;
+    }
+
+    if (signUpData.password !== signUpData.confirmPassword) {
+      toast.error("两次密码输入不一致");
       return;
     }
 
@@ -97,30 +108,40 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
     try {
       console.log('Attempting to sign up with email:', signUpData.email);
-      
-      const { error } = await supabase.auth.signUp({
+
+      const { user, error } = await signUp({
+        first_name: signUpData.firstName,
+        last_name: signUpData.lastName,
         email: signUpData.email,
         password: signUpData.password,
-        options: {
-          data: {
-            name: signUpData.name,
-          },
-          emailRedirectTo: undefined, // 禁用邮箱验证重定向
-        },
       });
 
       if (error) {
         console.error('Sign up error:', error);
-        toast.error(error.message);
+        toast.error(error);
       } else {
-        toast.success("Registration successful! You can now sign in.");
-        setSignUpData({ name: "", email: "", password: "", confirmPassword: "" });
-        setTouched({ name: false, email: false, password: false, confirmPassword: false });
+        toast.success("注册成功！欢迎加入 CryptoNiche");
+        setSignUpData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setTouched({
+          firstName: false,
+          lastName: false,
+          email: false,
+          password: false,
+          confirmPassword: false,
+        });
         onOpenChange(false);
+        // 刷新页面以更新认证状态
+        window.location.reload();
       }
     } catch (error) {
       console.error('Sign up exception:', error);
-      toast.error("Registration failed, please try again");
+      toast.error("注册失败，请稍后重试");
     } finally {
       setLoading(false);
     }
@@ -132,34 +153,37 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!supabase) {
-      toast.error('Authentication service is not available. Please try again later.');
+
+    if (!signInData.email.trim()) {
+      toast.error("请输入邮箱");
       return;
     }
-    
+
+    if (!signInData.password) {
+      toast.error("请输入密码");
+      return;
+    }
+
     setLoading(true);
 
     try {
       console.log('Attempting to sign in with email:', signInData.email);
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email: signInData.email,
-        password: signInData.password,
-      });
+
+      const { user, error } = await signIn(signInData.email, signInData.password);
 
       if (error) {
         console.error('Sign in error:', error);
-        toast.error(error.message);
+        toast.error(error);
       } else {
-        toast.success("Sign in successful!");
+        toast.success("登录成功！");
+        setSignInData({ email: "", password: "" });
         onOpenChange(false);
-        // Reload the page to update the auth state
+        // 刷新页面以更新认证状态
         window.location.reload();
       }
     } catch (error) {
       console.error('Sign in exception:', error);
-      toast.error("Sign in failed, please try again");
+      toast.error("登录失败，请稍后重试");
     } finally {
       setLoading(false);
     }
@@ -169,22 +193,22 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Welcome to CryptoNiche</DialogTitle>
+          <DialogTitle>欢迎来到 CryptoNiche</DialogTitle>
           <DialogDescription>
-            Sign in or sign up to access full features
+            登录或注册以访问完整功能
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signin">登录</TabsTrigger>
+            <TabsTrigger value="signup">注册</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin" className="space-y-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
+                <Label htmlFor="signin-email">邮箱</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -202,60 +226,84 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
+                <Label htmlFor="signin-password">密码</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="signin-password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     value={signInData.password}
                     onChange={(e) =>
                       setSignInData({ ...signInData, password: e.target.value })
                     }
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "登录中..." : "登录"}
               </Button>
             </form>
           </TabsContent>
 
           <TabsContent value="signup" className="space-y-4">
             <form onSubmit={handleSignUp} className="space-y-4">
-              {/* Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Your full name"
-                    className={cn(
-                      "pl-10",
-                      touched.name && validation && !validation.name.isValid && "border-red-500"
-                    )}
-                    value={signUpData.name}
-                    onChange={(e) =>
-                      setSignUpData({ ...signUpData, name: e.target.value })
-                    }
-                    onBlur={() => handleFieldBlur('name')}
-                    required
-                  />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-firstname">名字</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="signup-firstname"
+                      type="text"
+                      placeholder="John"
+                      className="pl-10"
+                      value={signUpData.firstName}
+                      onChange={(e) =>
+                        setSignUpData({ ...signUpData, firstName: e.target.value })
+                      }
+                      onBlur={() => handleFieldBlur("firstName")}
+                      required
+                    />
+                  </div>
                 </div>
-                {touched.name && validation && !validation.name.isValid && (
-                  <p className="text-xs text-red-600">{validation.name.message}</p>
-                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-lastname">姓氏</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="signup-lastname"
+                      type="text"
+                      placeholder="Doe"
+                      className="pl-10"
+                      value={signUpData.lastName}
+                      onChange={(e) =>
+                        setSignUpData({ ...signUpData, lastName: e.target.value })
+                      }
+                      onBlur={() => handleFieldBlur("lastName")}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
+                <Label htmlFor="signup-email">邮箱</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -264,24 +312,26 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="your@email.com"
                     className={cn(
                       "pl-10",
-                      touched.email && validation && !validation.email.isValid && "border-red-500"
+                      touched.email &&
+                        validation?.email &&
+                        !validation.email.isValid &&
+                        "border-red-500 focus-visible:ring-red-500"
                     )}
                     value={signUpData.email}
                     onChange={(e) =>
                       setSignUpData({ ...signUpData, email: e.target.value })
                     }
-                    onBlur={() => handleFieldBlur('email')}
+                    onBlur={() => handleFieldBlur("email")}
                     required
                   />
                 </div>
-                {touched.email && validation && !validation.email.isValid && (
-                  <p className="text-xs text-red-600">{validation.email.message}</p>
+                {touched.email && validation?.email && !validation.email.isValid && (
+                  <p className="text-sm text-red-500">{validation.email.message}</p>
                 )}
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
+                <Label htmlFor="signup-password">密码</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -290,36 +340,37 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="••••••••"
                     className={cn(
                       "pl-10 pr-10",
-                      touched.password && validation && !validation.password.isValid && "border-red-500"
+                      touched.password &&
+                        validation?.password &&
+                        !validation.password.isValid &&
+                        "border-red-500 focus-visible:ring-red-500"
                     )}
                     value={signUpData.password}
                     onChange={(e) =>
                       setSignUpData({ ...signUpData, password: e.target.value })
                     }
-                    onBlur={() => handleFieldBlur('password')}
+                    onBlur={() => handleFieldBlur("password")}
                     required
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-3 h-4 w-4 text-muted-foreground"
                     onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
-                
-                {/* Password Strength Indicator */}
-                {validation && signUpData.password && (
-                  <PasswordStrength 
-                    validation={validation.password} 
-                    password={signUpData.password} 
-                  />
+                {signUpData.password && validation && (
+                  <PasswordStrength password={signUpData.password} validation={validation.password} />
                 )}
               </div>
 
-              {/* Confirm Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                <Label htmlFor="signup-confirm-password">确认密码</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -328,40 +379,44 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="••••••••"
                     className={cn(
                       "pl-10 pr-10",
-                      touched.confirmPassword && validation && !validation.confirmPassword.isValid && "border-red-500",
-                      touched.confirmPassword && validation && validation.confirmPassword.isValid && "border-green-500"
+                      touched.confirmPassword &&
+                        validation?.confirmPassword &&
+                        !validation.confirmPassword.isValid &&
+                        "border-red-500 focus-visible:ring-red-500"
                     )}
                     value={signUpData.confirmPassword}
                     onChange={(e) =>
-                      setSignUpData({ ...signUpData, confirmPassword: e.target.value })
+                      setSignUpData({
+                        ...signUpData,
+                        confirmPassword: e.target.value,
+                      })
                     }
-                    onBlur={() => handleFieldBlur('confirmPassword')}
+                    onBlur={() => handleFieldBlur("confirmPassword")}
                     required
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-3 h-4 w-4 text-muted-foreground"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
-                {touched.confirmPassword && validation && (
-                  <p className={cn(
-                    "text-xs",
-                    validation.confirmPassword.isValid ? "text-green-600" : "text-red-600"
-                  )}>
-                    {validation.confirmPassword.message}
-                  </p>
-                )}
+                {touched.confirmPassword &&
+                  validation?.confirmPassword &&
+                  !validation.confirmPassword.isValid && (
+                    <p className="text-sm text-red-500">
+                      {validation.confirmPassword.message}
+                    </p>
+                  )}
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading || (validation ? (!validation.name.isValid || !validation.email.isValid || !validation.password.isValid || !validation.confirmPassword.isValid) : false)}
-              >
-                {loading ? "Creating Account..." : "Create Account"}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "注册中..." : "注册"}
               </Button>
             </form>
           </TabsContent>
