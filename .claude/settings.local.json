@@ -13,7 +13,8 @@
       "Bash(npm install:*)",
       "Bash(cat:*)",
       "Bash(npm run dev:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

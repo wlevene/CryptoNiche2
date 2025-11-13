@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, BarChart3, RefreshCw } from "lucide-react";
 import { FavoriteButton } from "@/components/market/favorite-button";
+import { QuickAlertButton } from "@/components/alerts/quick-alert-button";
 import type { MarketOverviewReply, CurrencyDetail } from "@/lib/types/api-v1";
 
 export function MarketOverview() {
@@ -65,11 +66,18 @@ export function MarketOverview() {
               <span className="font-bold text-lg">{item.currency.symbol}</span>
               <span className="text-sm text-muted-foreground">{item.currency.name}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <FavoriteButton
                 cmcId={item.currency.cmc_id || 0}
                 isFavorite={item.is_favorite || false}
                 symbol={item.currency.symbol}
+                variant="ghost"
+                size="icon"
+              />
+              <QuickAlertButton
+                cmcId={item.currency.cmc_id || 0}
+                symbol={item.currency.symbol}
+                currentPrice={item.price?.price}
                 variant="ghost"
                 size="icon"
               />

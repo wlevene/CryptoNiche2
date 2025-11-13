@@ -21,13 +21,14 @@ interface Cryptocurrency {
 interface AlertFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  defaultCryptoId?: number; // 默认选中的货币 ID
 }
 
-export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
+export function AlertForm({ onSuccess, onCancel, defaultCryptoId }: AlertFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([]);
   const [formData, setFormData] = useState({
-    crypto_id: '',
+    crypto_id: defaultCryptoId ? defaultCryptoId.toString() : '',
     alert_type: 'price_change' as 'price_change' | 'price_threshold',
     threshold_percentage: '',
     threshold_price: '',
@@ -38,6 +39,16 @@ export function AlertForm({ onSuccess, onCancel }: AlertFormProps) {
   useEffect(() => {
     fetchCryptocurrencies();
   }, []);
+
+  // 当 defaultCryptoId 改变时，更新表单
+  useEffect(() => {
+    if (defaultCryptoId) {
+      setFormData(prev => ({
+        ...prev,
+        crypto_id: defaultCryptoId.toString()
+      }));
+    }
+  }, [defaultCryptoId]);
 
   const fetchCryptocurrencies = async () => {
     try {
