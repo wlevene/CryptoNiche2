@@ -10,13 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Loader2, Bell, TrendingUp } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetch-with-auth";
-
-interface Cryptocurrency {
-  id: number;
-  name: string;
-  symbol: string;
-  price: number;
-}
+import type { CurrencyDetail } from "@/lib/types/api-v1";
 
 interface AlertFormProps {
   onSuccess?: () => void;
@@ -26,7 +20,7 @@ interface AlertFormProps {
 
 export function AlertForm({ onSuccess, onCancel, defaultCryptoId }: AlertFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([]);
+  const [cryptocurrencies, setCryptocurrencies] = useState<CurrencyDetail[]>([]);
   const [formData, setFormData] = useState({
     crypto_id: defaultCryptoId ? defaultCryptoId.toString() : '',
     alert_type: 'price_change' as 'price_change' | 'price_threshold',

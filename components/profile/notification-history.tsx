@@ -43,7 +43,7 @@ export function NotificationHistory() {
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const result = await alertServiceV2.getNotifications({ limit });
+      const result = await alertServiceV2.getNotifications({ page_size: limit });
       // result 是 NotificationListReply: { items: Notification[], total: number }
       if (result && result.items) {
         setNotifications(result.items as any);

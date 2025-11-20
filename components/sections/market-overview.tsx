@@ -76,7 +76,7 @@ export function MarketOverview() {
               />
               <QuickAlertButton
                 cmcId={item.currency.cmc_id || 0}
-                symbol={item.currency.symbol}
+                symbol={item.currency.symbol ?? ''}
                 currentPrice={item.price?.price}
                 variant="ghost"
                 size="icon"
