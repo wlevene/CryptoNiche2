@@ -80,27 +80,27 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
     // 基本验证
     if (!signUpData.firstName.trim()) {
-      toast.error("请输入名字");
+      toast.error("Please enter your first name");
       return;
     }
 
     if (!signUpData.lastName.trim()) {
-      toast.error("请输入姓氏");
+      toast.error("Please enter your last name");
       return;
     }
 
     if (!signUpData.email.trim()) {
-      toast.error("请输入邮箱");
+      toast.error("Please enter your email");
       return;
     }
 
     if (signUpData.password.length < 8) {
-      toast.error("密码至少需要 8 位");
+      toast.error("Password must be at least 8 characters");
       return;
     }
 
     if (signUpData.password !== signUpData.confirmPassword) {
-      toast.error("两次密码输入不一致");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -120,7 +120,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         console.error('Sign up error:', error);
         toast.error(error);
       } else {
-        toast.success("注册成功！欢迎加入 CryptoNiche");
+        toast.success("Sign up successful! Welcome to CryptoNiche");
         setSignUpData({
           firstName: "",
           lastName: "",
@@ -141,7 +141,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       }
     } catch (error) {
       console.error('Sign up exception:', error);
-      toast.error("注册失败，请稍后重试");
+      toast.error("Sign up failed. Please try again later");
     } finally {
       setLoading(false);
     }
@@ -155,12 +155,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     e.preventDefault();
 
     if (!signInData.email.trim()) {
-      toast.error("请输入邮箱");
+      toast.error("Please enter your email");
       return;
     }
 
     if (!signInData.password) {
-      toast.error("请输入密码");
+      toast.error("Please enter your password");
       return;
     }
 
@@ -175,7 +175,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         console.error('Sign in error:', error);
         toast.error(error);
       } else {
-        toast.success("登录成功！");
+        toast.success("Sign in successful!");
         setSignInData({ email: "", password: "" });
         onOpenChange(false);
         // 刷新页面以更新认证状态
@@ -183,7 +183,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       }
     } catch (error) {
       console.error('Sign in exception:', error);
-      toast.error("登录失败，请稍后重试");
+      toast.error("Sign in failed. Please try again later");
     } finally {
       setLoading(false);
     }
@@ -193,22 +193,22 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>欢迎来到 CryptoNiche</DialogTitle>
+          <DialogTitle>Welcome to CryptoNiche</DialogTitle>
           <DialogDescription>
-            登录或注册以访问完整功能
+            Sign in or sign up to access all features
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">登录</TabsTrigger>
-            <TabsTrigger value="signup">注册</TabsTrigger>
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin" className="space-y-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">邮箱</Label>
+                <Label htmlFor="signin-email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -226,7 +226,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signin-password">密码</Label>
+                <Label htmlFor="signin-password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -255,7 +255,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "登录中..." : "登录"}
+                {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </TabsContent>
@@ -264,7 +264,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-firstname">名字</Label>
+                  <Label htmlFor="signup-firstname">First Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -283,7 +283,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-lastname">姓氏</Label>
+                  <Label htmlFor="signup-lastname">Last Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -303,7 +303,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-email">邮箱</Label>
+                <Label htmlFor="signup-email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -331,7 +331,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password">密码</Label>
+                <Label htmlFor="signup-password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -370,7 +370,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-confirm-password">确认密码</Label>
+                <Label htmlFor="signup-confirm-password">Confirm Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -416,7 +416,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "注册中..." : "注册"}
+                {loading ? "Signing up..." : "Sign Up"}
               </Button>
             </form>
           </TabsContent>
