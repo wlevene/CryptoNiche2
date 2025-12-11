@@ -51,7 +51,14 @@ export function AlertForm({ onSuccess, onCancel, defaultCryptoId }: AlertFormPro
       if (result.success && result.data) {
         // API 返回的是 { success: true, data: { items: [...], total: ..., page: ..., page_size: ... } }
         const items = result.data.items || [];
-        setCryptocurrencies(items);
+
+        // 去重：使用 cmc_id 作为唯一标识，过滤掉重复的货币
+        const uniqueItems = items.filter((item, index, self) =>
+          item?.currency?.cmc_id &&
+          index === self.findIndex(t => t?.currency?.cmc_id === item.currency.cmc_id)
+        );
+
+        setCryptocurrencies(uniqueItems);
       }
     } catch (error) {
       console.error('Error fetching cryptocurrencies:', error);
@@ -130,23 +137,25 @@ export function AlertForm({ onSuccess, onCancel, defaultCryptoId }: AlertFormPro
                 <SelectValue placeholder="Select a cryptocurrency" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg backdrop-blur-sm max-h-60 z-50">
-                {cryptocurrencies.map((item) => (
-                  <SelectItem
-                    key={item.currency.cmc_id}
-                    value={item.currency.cmc_id?.toString() || ''}
-                    className="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{item.currency.symbol}</span>
-                      <span className="text-muted-foreground">{item.currency.name}</span>
-                      {item.price?.price && (
-                        <span className="text-sm text-muted-foreground">
-                          ${item.price.price.toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
+                {cryptocurrencies
+                  .filter(item => item?.currency?.cmc_id) // 确保数据有效
+                  .map((item) => (
+                    <SelectItem
+                      key={`crypto-${item.currency.cmc_id}`}
+                      value={item.currency.cmc_id.toString()}
+                      className="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{item.currency.symbol}</span>
+                        <span className="text-muted-foreground">{item.currency.name}</span>
+                        {item.price?.price && (
+                          <span className="text-sm text-muted-foreground">
+                            ${item.price.price.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
