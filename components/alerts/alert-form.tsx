@@ -53,7 +53,7 @@ export function AlertForm({ onSuccess, onCancel, defaultCryptoId }: AlertFormPro
         const items = result.data.items || [];
 
         // 去重：使用 cmc_id 作为唯一标识，过滤掉重复的货币
-        const uniqueItems = items.filter((item, index, self) =>
+        const uniqueItems = items.filter((item: CurrencyDetail, index: number, self: CurrencyDetail[]) =>
           item?.currency?.cmc_id &&
           index === self.findIndex(t => t?.currency?.cmc_id === item.currency.cmc_id)
         );
