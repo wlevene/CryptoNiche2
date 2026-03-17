@@ -138,24 +138,27 @@ export function AlertForm({ onSuccess, onCancel, defaultCryptoId }: AlertFormPro
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg backdrop-blur-sm max-h-60 z-50">
                 {cryptocurrencies
-                  .filter(item => item?.currency?.cmc_id) // 确保数据有效
-                  .map((item) => (
-                    <SelectItem
-                      key={`crypto-${item.currency.cmc_id}`}
-                      value={item.currency.cmc_id.toString()}
-                      className="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{item.currency.symbol}</span>
-                        <span className="text-muted-foreground">{item.currency.name}</span>
-                        {item.price?.price && (
-                          <span className="text-sm text-muted-foreground">
-                            ${item.price.price.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  .filter(item => item?.currency?.cmc_id != null) // 确保数据有效
+                  .map((item) => {
+                    const cmcId = item.currency!.cmc_id!;
+                    return (
+                      <SelectItem
+                        key={`crypto-${cmcId}`}
+                        value={cmcId.toString()}
+                        className="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{item.currency.symbol}</span>
+                          <span className="text-muted-foreground">{item.currency.name}</span>
+                          {item.price?.price && (
+                            <span className="text-sm text-muted-foreground">
+                              ${item.price.price.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
               </SelectContent>
             </Select>
           </div>

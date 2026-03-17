@@ -1,15 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Zap, Shield, TrendingUp, Star, ZapOff } from "lucide-react";
+import { Check, Zap, Shield, TrendingUp, Star, ZapOff, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 
+interface Feature {
+  text: string;
+  included: boolean;
+  icon?: LucideIcon;
+}
+
 // 定价套餐数据
-const plans = [
+const plans: Array<{
+  name: string;
+  description: string;
+  price: { monthly: number; yearly: number };
+  currency: string;
+  trialDays: number;
+  features: Feature[];
+  cta: string;
+  popular: boolean;
+  color: string;
+  savings?: string;
+}> = [
   {
     name: "Free",
     description: "基础功能，适合新手体验",
@@ -27,7 +44,7 @@ const plans = [
       { text: "高级图表", included: false },
       { text: "API 访问", included: false },
       { text: "VIP 社群", included: false },
-    ],
+    ] as Feature[],
     cta: "免费开始",
     popular: false,
     color: "blue",
@@ -49,7 +66,7 @@ const plans = [
       { text: "每月 10 条短信通知", included: true },
       { text: "API 访问", included: false },
       { text: "VIP 社群", included: false },
-    ],
+    ] as Feature[],
     cta: "开始 7 天免费试用",
     popular: true,
     color: "green",
@@ -72,7 +89,7 @@ const plans = [
       { text: "白标解决方案", included: true },
       { text: "机构级分析工具", included: true },
       { text: "定制开发支持", included: true },
-    ],
+    ] as Feature[],
     cta: "开始 7 天免费试用",
     popular: false,
     color: "purple",
