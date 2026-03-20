@@ -25,11 +25,11 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex flex-col items-start space-y-0.5">
             <div className="flex items-center space-x-2">
-              <Bitcoin className="h-6 w-6 text-orange-500" />
-              <span className="font-bold text-xl">CryptoNiche</span>
+              <Bitcoin className="h-8 w-8 text-orange-500" />
+              <span className="font-bold text-2xl text-red-500">CryptoNiche</span>
             </div>
-            <span className="text-xs text-muted-foreground -ml-8">Intelligent Cryptocurrency Analytics Platform</span>
-            <span className="text-xs text-orange-500 -ml-8 font-medium">Never Miss the Next 10x Crypto</span>
+            <span className="text-sm text-muted-foreground -ml-8">Intelligent Cryptocurrency Analytics Platform</span>
+            <span className="text-sm text-orange-500 -ml-8 font-semibold">Never Miss the Next 10x Crypto</span>
           </Link>
 
           {/* Desktop Navigation */}
