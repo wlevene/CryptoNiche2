@@ -29,6 +29,7 @@ export function Navbar() {
               <span className="font-bold text-xl">CryptoNiche</span>
             </div>
             <span className="text-xs text-muted-foreground -ml-8">Intelligent Cryptocurrency Analytics Platform</span>
+            <span className="text-xs text-orange-500 -ml-8 font-medium">Never Miss the Next 10x Crypto</span>
           </Link>
 
           {/* Desktop Navigation */}
