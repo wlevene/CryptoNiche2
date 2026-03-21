@@ -7,6 +7,7 @@ import { FinalCTA } from "@/components/sections/final-cta";
 import { Container } from "@/components/layout/container";
 import { MarketOverview } from "@/components/sections/market-overview";
 import { CurrencyList } from "@/components/market/currency-list";
+import { SuccessStories } from "@/components/sections/success-stories";
 
 export default function Home() {
   return (
@@ -17,10 +18,17 @@ export default function Home() {
       {/* Live Opportunity Ticker - 实时机会滚动条 */}
       <OpportunityTicker />
       
-      {/* Market Overview - 市场概览（保留原有功能） */}
+      {/* Market Overview - 市场概览（免费功能） */}
       <Container>
         <div className="py-8">
           <MarketOverview />
+        </div>
+      </Container>
+      
+      {/* All Cryptocurrencies - 全部币种列表（免费功能） */}
+      <Container>
+        <div className="py-8">
+          <CurrencyList />
         </div>
       </Container>
       
@@ -30,12 +38,8 @@ export default function Home() {
       {/* Gems Discovery - 潜力币发现（付费墙） */}
       <GemsDiscovery />
       
-      {/* All Cryptocurrencies - 全部币种列表（保留原有功能） */}
-      <Container>
-        <div className="py-8">
-          <CurrencyList />
-        </div>
-      </Container>
+      {/* Success Stories - 成功案例（信任背书） */}
+      <SuccessStories />
       
       {/* Pricing Plans - 付费方案 */}
       <PricingTable />
