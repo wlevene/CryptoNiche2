@@ -23,13 +23,9 @@ export function Navbar() {
       <Container>
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex flex-col items-start space-y-0.5">
-            <div className="flex items-center space-x-2">
-              <Bitcoin className="h-8 w-8 text-orange-500" />
-              <span className="font-bold text-2xl text-red-500">CryptoNiche</span>
-            </div>
-            <span className="text-sm text-muted-foreground -ml-8">Intelligent Cryptocurrency Analytics Platform</span>
-            <span className="text-sm text-orange-500 -ml-8 font-semibold">Never Miss the Next 10x Crypto</span>
+          <Link href="/" className="flex items-center space-x-2">
+            <Bitcoin className="h-8 w-8 text-orange-500" />
+            <span className="font-bold text-2xl text-red-500">CryptoNiche</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -81,15 +77,6 @@ export function Navbar() {
                   )}
                 >
                   About
-                </Link>
-                <Link
-                  href="/test"
-                  className={cn(
-                    "transition-colors font-medium",
-                    "text-foreground/60 hover:text-foreground"
-                  )}
-                >
-                  Test
                 </Link>
               </>
             )}
@@ -192,16 +179,6 @@ export function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     About
-                  </Link>
-                  <Link
-                    href="/test"
-                    className={cn(
-                      "transition-colors font-medium",
-                      "text-foreground/60 hover:text-foreground"
-                    )}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Test
                   </Link>
                 </>
               )}
